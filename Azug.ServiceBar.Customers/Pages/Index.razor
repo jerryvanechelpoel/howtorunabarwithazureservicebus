@@ -1,0 +1,44 @@
+﻿@page "/"
+
+<div class="container">
+    <div class="row justify-content-center">
+        <img src="images/MoesBar.png" />
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="d-flex justify-content-center">
+                <Customer Name="Barney" OnCustomerCallback="WriteActivity"></Customer>
+            </div>
+        </div>
+        <div class="col">
+            <div class="d-flex justify-content-center">
+                <Customer Name="Homer" OnCustomerCallback="WriteActivity"></Customer>
+
+            </div>
+        </div>
+        <div class="col">
+            <div class="d-flex justify-content-center">
+                <Customer Name="Carl" OnCustomerCallback="WriteActivity"></Customer>
+            </div>
+        </div>
+        <div class="col">
+            <div class="d-flex justify-content-center">
+                <Customer Name="Lenny" OnCustomerCallback="WriteActivity"></Customer>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div>@Activities</div>
+    </div>
+</div>
+
+@code
+{
+    public MarkupString Activities { get; set; }
+
+    public void WriteActivity(string message)
+    {
+        Activities = new MarkupString($"{DateTime.Now:T}: <strong>{message}</strong><br/>{Activities.Value}");
+        StateHasChanged();
+    }
+}

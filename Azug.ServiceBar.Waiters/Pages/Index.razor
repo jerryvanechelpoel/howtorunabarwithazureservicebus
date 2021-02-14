@@ -1,0 +1,30 @@
+﻿@page "/"
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col">
+            <Waiter Name="Moe"
+                    ImageSrc="images/Moe.png"
+                    OnWaiteringCallback="WriteActivity"></Waiter>
+        </div>
+        <div class="col">
+            <Waiter Name="Renee"
+                    ImageSrc="images/Renee.png"
+                    OnWaiteringCallback="WriteActivity"></Waiter>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div>@Activities</div>
+    </div>
+</div>
+
+@code
+{
+    public MarkupString Activities { get; set; }
+
+    public void WriteActivity(string message)
+    {
+        Activities = new MarkupString($"{DateTime.Now:T}: <strong>{message}</strong><br/>{Activities.Value}");
+        StateHasChanged();
+    }
+}

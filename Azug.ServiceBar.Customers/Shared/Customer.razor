@@ -1,0 +1,124 @@
+﻿@inject ServiceBusProxy Proxy
+
+
+    <div>
+        <div class="row justify-content-center">
+            <h3>@Name</h3>
+        </div>
+        <div class="row justify-content-center">
+            <label class="switch">
+                <input type="checkbox" value="@IsActive" @onchange="CheckChanged" />
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="row justify-content-center">
+            <select @bind="@SelectedDrink" disabled="@IsInActive">
+                @foreach (var menuItem in Menu)
+                {
+                    <option value="@menuItem">@menuItem</option>
+                }
+            </select>
+            <input type="button" value="Order a drink" @onclick="OrderADrink" disabled="@IsInActive" />
+        </div>
+        <div class="row justify-content-center">
+            <input type="button" value="Round on me" @onclick="OrderARound" disabled="@IsInActive" />
+        </div>
+        <div class="row justify-content-center">
+            <input type="button" value="Ad fundum" @onclick="DoAnAdFundum" disabled="@IsInActive" />
+        </div>
+    </div>
+
+    @code {
+
+        [Parameter]
+        public string Name { get; set; }
+
+        [Parameter]
+        public EventCallback<string> OnCustomerCallback { get; set; }
+
+        public string[] Menu { get; } = new[] { "Beer", "Special beer", "Wine", "Water" };
+        public string SelectedDrink { get; set; }
+
+        public bool IsActive { get; set; }
+        public bool IsInActive => !IsActive;
+
+        public Customer()
+        {
+            IsActive = false;
+        }
+
+        public async Task CheckChanged()
+        {
+            IsActive = !IsActive;
+
+            if (IsActive)
+            {
+                await Proxy.TakeASeatAsync(Name);
+                await OnCustomerCallback.InvokeAsync($"{Name} has taken a seat at the Azure Service Bar.");
+            }
+            else
+            {
+                await Proxy.LeaveBarAsync(Name);
+                await OnCustomerCallback.InvokeAsync($"{Name} has left the Azure Service Bar.");
+            }
+        }
+
+        public async Task OrderADrink()
+        {
+            if (IsInActive)
+            {
+                return;
+            }
+
+            var order = new Order
+            {
+                Drinks = new[] { new OrderedDrink { DrinkName = SelectedDrink, OrderedFor = Name } },
+                OrderedBy = Name
+            };
+
+            await Proxy.MakeOrderAsync(order);
+            await OnCustomerCallback.InvokeAsync($"{Name} makes another order.");
+        }
+
+        public async Task OrderARound()
+        {
+            if (IsInActive)
+            {
+                return;
+            }
+
+            var order = new Order
+            {
+                Drinks = new[] { new OrderedDrink { DrinkName = "Beer", OrderedFor = "Everyone" } },
+                OrderedBy = Name
+            };
+
+            await Proxy.MakeOrderAsync(order);
+            await OnCustomerCallback.InvokeAsync($"{Name}: {order.Drinks[0].DrinkName} for everyone!");
+        }
+
+        public async Task DoAnAdFundum()
+        {
+            if (IsInActive)
+            {
+                return;
+            }
+
+            await OnCustomerCallback.InvokeAsync($"{Name} is going for an ad fundum!");
+            ServedDrink drink = await Proxy.GetNextDrinkAsync(Name);
+
+
+            if (drink == null)
+            {
+                await OnCustomerCallback.InvokeAsync($"{Name}: Hey who stole my beer?");
+            }
+            else if (string.IsNullOrEmpty(drink?.DrinkName) || drink.DrinkName.Contains("spoiled", StringComparison.OrdinalIgnoreCase))
+            {
+                await OnCustomerCallback.InvokeAsync($"{Name}: EEEW This one's SPOILED!");
+            }
+            else
+            {
+                await OnCustomerCallback.InvokeAsync($"{Name}: BUUUUUURP!");
+            }
+        }
+    }
