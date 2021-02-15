@@ -20,9 +20,9 @@ namespace Azug.ServiceBar.Customers
 
         public ServiceBusProxy(IConfiguration configuration)
         {
-            NamespaceCnBuilder = new ServiceBusConnectionStringBuilder(configuration.GetValue<string>("Azure:ServiceBus:Namespace"));
-            OrderQueueCnBuilder = new ServiceBusConnectionStringBuilder(configuration.GetValue<string>("Azure:ServiceBus:OrderQueue"));
-            BarTopicCnBuilder = new ServiceBusConnectionStringBuilder(configuration.GetValue<string>("Azure:ServiceBus:BarTopic"));
+            NamespaceCnBuilder = new ServiceBusConnectionStringBuilder(configuration.GetValue<string>("Azure:ServiceBus:Namespace:Customers"));
+            OrderQueueCnBuilder = new ServiceBusConnectionStringBuilder(configuration.GetValue<string>("Azure:ServiceBus:OrderQueue:Customers"));
+            BarTopicCnBuilder = new ServiceBusConnectionStringBuilder(configuration.GetValue<string>("Azure:ServiceBus:BarTopic:Customers"));
         }
 
         public async Task<bool> IsCustomerPresentAsync(string customerName)

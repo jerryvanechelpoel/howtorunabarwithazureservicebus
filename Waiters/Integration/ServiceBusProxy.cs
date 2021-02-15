@@ -15,8 +15,8 @@ namespace Azug.ServiceBar.Waiters
 
         public ServiceBusProxy(IConfiguration configuration)
         {
-            OrderQueueCnBuilder = new ServiceBusConnectionStringBuilder(configuration.GetValue<string>("Azure:ServiceBus:OrderQueue"));
-            BarTopicCnBuilder = new ServiceBusConnectionStringBuilder(configuration.GetValue<string>("Azure:ServiceBus:BarTopic"));
+            OrderQueueCnBuilder = new ServiceBusConnectionStringBuilder(configuration.GetValue<string>("Azure:ServiceBus:OrderQueue:Waiters"));
+            BarTopicCnBuilder = new ServiceBusConnectionStringBuilder(configuration.GetValue<string>("Azure:ServiceBus:BarTopic:Waiters"));
         }
 
         public async Task<Order> GetNextOrderAsync()

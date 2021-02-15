@@ -80,7 +80,7 @@
         };
 
         await Proxy.MakeOrderAsync(order);
-        await OnCustomerCallback.InvokeAsync($"{Name} makes another order.");
+        await OnCustomerCallback.InvokeAsync($"{Name} orders another {SelectedDrink}.");
     }
 
     public async Task OrderARound()
