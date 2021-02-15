@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Azug.ServiceBar.Models\Azug.ServiceBar.Models.csproj" />
+    <ProjectReference Include="..\Models\Azug.ServiceBar.Models.csproj" />
   </ItemGroup>
 
 </Project>
