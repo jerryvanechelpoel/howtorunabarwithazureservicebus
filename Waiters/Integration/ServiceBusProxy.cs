@@ -21,7 +21,7 @@ namespace Azug.ServiceBar.Waiters
 
         public async Task<Order> GetNextOrderAsync()
         {
-            string body = null;
+            Order order = null;
             var client = new QueueClient(OrderQueueCnBuilder);
 
             client.RegisterMessageHandler(async (msg, token) =>
@@ -30,9 +30,14 @@ namespace Azug.ServiceBar.Waiters
 
                 if (message != null)
                 {
-                    body = Encoding.UTF8.GetString(message.Body);
+                    string body = Encoding.UTF8.GetString(message.Body);
 
-                    if (body.Contains("spoiled", StringComparison.OrdinalIgnoreCase))
+                    if (body != null)
+                    {
+                        order = JsonSerializer.Deserialize<Order>(body);
+                    }
+
+                    if (order == null)
                     {
                         await client.DeadLetterAsync(msg.SystemProperties.LockToken);
                     }
@@ -50,12 +55,7 @@ namespace Azug.ServiceBar.Waiters
             await client.UnregisterMessageHandlerAsync(TimeSpan.FromMilliseconds(2000));
             await client.CloseAsync();
 
-            if (body != null)
-            {
-                return JsonSerializer.Deserialize<Order>(body);
-            }
-
-            return default;
+            return order;
         }
 
         public async Task ServeDrinkAsync(string orderedFor, ServedDrink drink)
