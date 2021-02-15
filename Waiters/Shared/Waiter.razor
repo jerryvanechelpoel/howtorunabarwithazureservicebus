@@ -31,9 +31,10 @@
     private Timer ActivityTimer { get; set; }
     private Random Randomizer = new Random();
 
-    public Waiter()
+    protected override void OnInitialized()
     {
-        IsActive = false;
+        base.OnInitialized();
+
     }
 
     public async Task CheckChanged()

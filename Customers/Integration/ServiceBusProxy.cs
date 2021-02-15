@@ -3,6 +3,8 @@ using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Management;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Linq;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -21,6 +23,13 @@ namespace Azug.ServiceBar.Customers
             NamespaceCnBuilder = new ServiceBusConnectionStringBuilder(configuration.GetValue<string>("Azure:ServiceBus:Namespace"));
             OrderQueueCnBuilder = new ServiceBusConnectionStringBuilder(configuration.GetValue<string>("Azure:ServiceBus:OrderQueue"));
             BarTopicCnBuilder = new ServiceBusConnectionStringBuilder(configuration.GetValue<string>("Azure:ServiceBus:BarTopic"));
+        }
+
+        public async Task<bool> IsCustomerPresentAsync(string customerName)
+        {
+            var client = new ManagementClient(NamespaceCnBuilder);
+
+            return await client.SubscriptionExistsAsync(TopicPath, customerName);
         }
 
         public async Task TakeASeatAsync(string customerName)

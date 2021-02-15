@@ -7,24 +7,24 @@
     </div>
     <div class="row justify-content-center">
         <label class="switch">
-            <input type="checkbox" value="@IsActive" @onchange="CheckChanged" />
+            <input type="checkbox" @bind="IsPresent" @oninput="CheckChanged" />
             <span class="slider"></span>
         </label>
     </div>
     <div class="row justify-content-center">
-        <select @bind="@SelectedDrink" disabled="@IsInActive">
+        <select @bind="@SelectedDrink" disabled="@IsNotPresent">
             @foreach (var menuItem in Menu)
             {
                 <option value="@menuItem">@menuItem</option>
             }
         </select>
-        <input type="button" value="Order a drink" @onclick="OrderADrink" disabled="@IsInActive" />
+        <input type="button" value="Order a drink" @onclick="OrderADrink" disabled="@IsNotPresent" />
     </div>
     <div class="row justify-content-center">
-        <input type="button" value="Round on me" @onclick="OrderARound" disabled="@IsInActive" />
+        <input type="button" value="Round on me" @onclick="OrderARound" disabled="@IsNotPresent" />
     </div>
     <div class="row justify-content-center">
-        <input type="button" value="Ad fundum" @onclick="DoAnAdFundum" disabled="@IsInActive" />
+        <input type="button" value="Ad fundum" @onclick="DoAnAdFundum" disabled="@IsNotPresent" />
     </div>
 </div>
 
@@ -39,25 +39,22 @@
     public string[] Menu { get; } = new[] { "Beer", "Special beer", "Wine", "Water" };
     public string SelectedDrink { get; set; }
 
-    public bool IsActive { get; set; }
-    public bool IsInActive => !IsActive;
+    public bool IsPresent { get; set; }
+    public bool IsNotPresent => !IsPresent;
 
-    public Customer()
+    protected override async Task OnInitializedAsync()
     {
-        IsActive = false;
-    }
+        await base.OnInitializedAsync();
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
         SelectedDrink = Menu.First();
+        IsPresent = await Proxy.IsCustomerPresentAsync(Name);
     }
 
     public async Task CheckChanged()
     {
-        IsActive = !IsActive;
+        IsPresent = !IsPresent;
 
-        if (IsActive)
+        if (IsPresent)
         {
             await Proxy.TakeASeatAsync(Name);
             await OnCustomerCallback.InvokeAsync($"{Name} has taken a seat at the Azure Service Bar.");
@@ -71,7 +68,7 @@
 
     public async Task OrderADrink()
     {
-        if (IsInActive)
+        if (IsNotPresent)
         {
             return;
         }
@@ -88,7 +85,7 @@
 
     public async Task OrderARound()
     {
-        if (IsInActive)
+        if (IsNotPresent)
         {
             return;
         }
@@ -105,7 +102,7 @@
 
     public async Task DoAnAdFundum()
     {
-        if (IsInActive)
+        if (IsNotPresent)
         {
             return;
         }
