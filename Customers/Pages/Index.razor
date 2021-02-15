@@ -7,7 +7,7 @@
         <img src="images/MoesBar.png" />
     </div>
     <div class="row">
-        @foreach (string customer in Customers)
+        @foreach (string customer in MoesCustomers)
         {
             <div class="col">
                 <div class="d-flex justify-content-center">
@@ -24,7 +24,7 @@
 @code
 {
     public MarkupString Activities { get; set; }
-    public List<string> Customers { get; set; } = new List<string> { "Barney", "Homer", "Carl", "Lenny" };
+    public List<string> MoesCustomers { get; set; } = new List<string> { "Barney", "Homer", "Carl", "Lenny" };
 
     public void WriteActivity(string message)
     {
