@@ -21,6 +21,7 @@ namespace Azug.ServiceBar.Waiters
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
+            services.AddSingleton<WaiterFactory>();
             services.AddSingleton<ServiceBusProxy>();
         }
 

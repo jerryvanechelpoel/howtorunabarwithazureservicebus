@@ -1,4 +1,4 @@
-﻿@inject ServiceBusProxy Proxy
+﻿@inject WaiterFactory Factory
 
 <div class="container">
     <div class="row justify-content-center">
@@ -9,7 +9,7 @@
     </div>
     <div class="row justify-content-center">
         <label class="switch">
-            <input type="checkbox" value="@IsActive" @onchange="CheckChanged" />
+            <input type="checkbox" @bind="@IsActive" @oninput="CheckChanged" />
             <span class="slider"></span>
         </label>
     </div>
@@ -27,90 +27,30 @@
     public EventCallback<string> OnWaiteringCallback { get; set; }
 
     public bool IsActive { get; set; }
-
-    private Timer ActivityTimer { get; set; }
-    private Random Randomizer = new Random();
+    private WaiterLogic Logic { get; set; }
 
     protected override void OnInitialized()
     {
-        base.OnInitialized();
-
+        Factory.Waiters.TryGetValue(Name, out WaiterLogic logic);
+        Logic = logic;
+        Logic.OnWaiteringActivity += WaiterLogic_OnWaiteringActivity;
+        IsActive = logic.IsActive;
     }
 
-    public async Task CheckChanged()
+    public void CheckChanged()
     {
         IsActive = !IsActive;
 
         if (IsActive)
         {
-            await OnWaiteringCallback.InvokeAsync($"{Name} starts working at Moe's Tavern!");
-            ActivityTimer = new Timer { Interval = 5000, Enabled = true, AutoReset = false };
-            ActivityTimer.Elapsed += DoWaitering;
+            Logic.Start();
         }
         else
         {
-            await OnWaiteringCallback.InvokeAsync($"{Name} is finishing up.");
-            ActivityTimer.Enabled = false;
-            await OnWaiteringCallback.InvokeAsync($"{Name} stops working at Moe's Tavern!");
+            Logic.Stop();
         }
     }
 
-    private void DoWaitering(object sender, ElapsedEventArgs e)
-    {
-        InvokeAsync(() => DoWaiteringAsync());
-    }
-
-    private async Task DoWaiteringAsync()
-    {
-        await OnWaiteringCallback.InvokeAsync($"{Name} is getting the next order.");
-        Order nextOrder = await Proxy.GetNextOrderAsync();
-
-        if (nextOrder == null)
-        {
-            await OnWaiteringCallback.InvokeAsync($"{Name} didn't find new orders.");
-
-            int waiterAction = Randomizer.Next(0, 5);
-
-            string activity = waiterAction switch
-            {
-                1 => $"{Name} is doing some dishes.",
-                2 => $"{Name} runs for the bathroom.",
-                3 => $"{Name} goes outside to have a smoke.",
-                4 => $"{Name} nips of their drink.",
-                _ => $"{Name} is talking to the customers."
-            };
-
-            await OnWaiteringCallback.InvokeAsync(activity);
-        }
-        else
-        {
-            foreach (OrderedDrink drink in nextOrder.Drinks)
-            {
-                if (drink == null)
-                {
-                    await OnWaiteringCallback.InvokeAsync($"{Name}: Well I can't do much with this.");
-                }
-                else
-                {
-                    var servedDrink = new ServedDrink { PaidBy = nextOrder.OrderedBy, DrinkName = drink.DrinkName };
-
-                    await OnWaiteringCallback.InvokeAsync($"{Name} Preparing {drink.DrinkName} for {drink.OrderedFor}.");
-                    await Task.Delay(1000);
-
-                    int poisonedBeerRatio = Randomizer.Next(0, 100);
-
-                    if (poisonedBeerRatio > 80)
-                    {
-                        servedDrink.DrinkName = $"Spoiled {drink.DrinkName}";
-                        await OnWaiteringCallback.InvokeAsync($"{Name}: Created a SPOILED {drink.DrinkName} without knowing it!");
-                    }
-
-                    await Proxy.ServeDrinkAsync(drink.OrderedFor, servedDrink);
-                    await OnWaiteringCallback.InvokeAsync($"{Name}: Alright another soul served!");
-                }
-            }
-        }
-
-        ActivityTimer.Enabled = true;
-    }
+    private async void WaiterLogic_OnWaiteringActivity(object sender, WaiteringActivityEventArgs e)
+        => await InvokeAsync(() => OnWaiteringCallback.InvokeAsync(e.Message));
 }

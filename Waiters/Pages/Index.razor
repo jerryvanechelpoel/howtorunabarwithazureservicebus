@@ -22,9 +22,9 @@
 {
     public MarkupString Activities { get; set; }
 
-    public void WriteActivity(string message)
+    public async Task WriteActivity(string message)
     {
         Activities = new MarkupString($"{DateTime.Now:T}: <strong>{message}</strong><br/>{Activities.Value}");
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
 }
